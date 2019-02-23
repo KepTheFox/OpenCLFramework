@@ -3,6 +3,6 @@
 #include "clFramework.h"
 
 int main(int argc, char* argv[]){
-    printf("HERE WE GO\n");
     clInfo *cli = new clInfo;
+    cli->printInfo();
 }
