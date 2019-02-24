@@ -18,8 +18,14 @@ public:
     /*Functions*/
     void initDevice(cl_device_id did);
     void printDeviceInfo();
+    void loadKernelsFromFile(char *filename);
 
     cl_device_id id;
+
+    cl_program program;
+    cl_context context;
+    cl_command_queue commandQueue;
+
     cl_bool deviceAvailable;
     cl_bool deviceCompilerAvailable;
     char deviceExtensions[156];
@@ -36,6 +42,8 @@ public:
     void initPlatform(cl_platform_id pid);
     void getDevices();
     void printPlatformInfo();
+    void loadKernelsFromFile(char *filename);
+    // clDevice* getFirstAvailableDevice();
 
     cl_platform_id id;
     char platformProfile[156];
@@ -52,7 +60,7 @@ class clInfo{
 public:
     clInfo();
     void printInfo();
-    void loadKernelsFromFile(std::string filename);
+    void loadKernelsFromFile(char *filename);
 
     cl_platform_id *clPlatformIDs;
     cl_uint numPlatforms;

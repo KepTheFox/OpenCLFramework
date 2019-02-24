@@ -13,6 +13,11 @@ void clDevice::initDevice(cl_device_id did){
     err |= clGetDeviceInfo(this->id, CL_DEVICE_NAME, sizeof(this->deviceName), (void *)&(this->deviceName), NULL);
     err |= clGetDeviceInfo(this->id, CL_DEVICE_VENDOR, sizeof(this->deviceVendor), (void *)&(this->deviceVendor), NULL);
 
+    /* Create OpenCL context */
+    this->context = clCreateContext(NULL, 1, &(this->id), NULL, NULL, &err);
+    
+    /* Create Command Queue */
+    this->commandQueue = clCreateCommandQueue(this->context, this->id, 0, &err);
 }
 
 void clDevice::printDeviceInfo(){
@@ -25,6 +30,33 @@ void clDevice::printDeviceInfo(){
     printf("GLOBAL MEM SIZE:\t%ldMiB\n", this->deviceGlobalMemSize/(1024*1024));
     printf("-------------------------------------\n");
 }
+
+void clDevice::loadKernelsFromFile(char *filename){
+    cl_int err;
+    FILE *fp;
+    int MAX_SOURCE_SIZE = 1000000;
+    fp = fopen(filename, "r");
+    if (!fp) {
+        fprintf(stderr, "Failed to load kernels.\n");
+        exit(1);
+    }
+    char *source_str = new char[MAX_SOURCE_SIZE];
+    int source_size = fread(source_str, 1, MAX_SOURCE_SIZE, fp);
+    fclose(fp);
+
+    // printf("Source size: %d\n", source_size);
+
+    // printf("SOURCE:\n%s\n", source_str);
+
+    this->program = clCreateProgramWithSource(this->context, 1, (const char **)&source_str, NULL, NULL);
+        
+    /* Build Kernel Program */
+    err |= clBuildProgram(this->program, 1, &(this->id), NULL, NULL, NULL);
+
+    delete[] source_str;
+}
+
+
 
 
 
@@ -76,6 +108,12 @@ void clPlatform::getDevices(){
     }
 }
 
+void clPlatform::loadKernelsFromFile(char *filename){
+    for(int i = 0; i < this->numDevices; ++i){
+        this->clDevices[i].loadKernelsFromFile(filename);
+    }
+}
+
 
 
 
@@ -99,5 +137,11 @@ clInfo::clInfo(){
 void clInfo::printInfo(){
     for(int i = 0; i < this->numPlatforms; ++i){
         this->clPlatforms[i].printPlatformInfo();
+    }
+}
+
+void clInfo::loadKernelsFromFile(char *filename){
+    for(int i = 0; i < this->numPlatforms; ++i){
+        this->clPlatforms[i].loadKernelsFromFile(filename);
     }
 }
